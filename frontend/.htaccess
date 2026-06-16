@@ -1,0 +1,10 @@
+# Serve production build when visiting /ChatBot/frontend/
+DirectoryIndex index.php dist/index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /ChatBot/frontend/
+
+  # Dev index.html points at /src/main.jsx — send users to the build instead
+  RewriteRule ^index\.html$ dist/index.html [L,R=302]
+</IfModule>
