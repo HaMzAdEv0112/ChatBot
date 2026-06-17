@@ -25,7 +25,26 @@ React UI  →  FastAPI API  →  Vector Store + Embeddings + LLM (Ollama)
 - Configurable LLM provider (Ollama / OpenAI / context-only)
 - REST API with auto-generated docs at `/docs`
 
-## Quick Start
+## Live Demo (Streamlit Cloud) — for CCP presentation
+
+Deploy a **live link** like the professor's example (`*.streamlit.app`):
+
+1. Get free Groq key: https://console.groq.com/keys
+2. Deploy at https://share.streamlit.io/ → connect GitHub repo
+3. Main file: `streamlit_app.py`
+4. Add `GROQ_API_KEY` in Streamlit Secrets
+
+**Full step-by-step:** see [DEPLOY.md](DEPLOY.md)
+
+```powershell
+# Test Streamlit locally
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+---
+
+## Quick Start (Local React + FastAPI)
 
 ### 1. Backend (double-click or terminal)
 
