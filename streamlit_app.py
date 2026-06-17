@@ -1,11 +1,13 @@
 import io
+import json
 import math
 import re
+import urllib.error
+import urllib.request
 from collections import Counter
 from pathlib import Path
 
 import streamlit as st
-from groq import Groq
 from pypdf import PdfReader
 
 SAMPLES_DIR = Path(__file__).parent / "backend" / "data" / "samples"
@@ -135,20 +137,37 @@ def answer_groq(query: str, chunks: list[dict], model: str) -> str:
         return "Add your free **GROQ_API_KEY** in Streamlit Cloud → Settings → Secrets."
 
     context = build_context(chunks) if chunks else "No matching documents found."
-    client = Groq(api_key=api_key)
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
+    payload = json.dumps({
+        "model": model,
+        "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
                 "role": "user",
                 "content": f"Context:\n{context}\n\nQuestion: {query}\n\nAnswer from context only:",
             },
         ],
-        temperature=0.3,
-        max_tokens=1024,
+        "temperature": 0.3,
+        "max_tokens": 1024,
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
     )
-    return response.choices[0].message.content or ""
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode())
+        return data["choices"][0]["message"]["content"] or ""
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="ignore")
+        return f"Groq API error ({exc.code}). Check your GROQ_API_KEY in Secrets."
+    except Exception:
+        return "Could not reach Groq API. Try again in a moment."
 
 
 def init_state() -> None:
